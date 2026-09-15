@@ -1,9 +1,7 @@
 (()=>{
   const root=document.querySelector('#dathium-web-showcase');
   if(!root)return;
-
-  const $=(s,c=root)=>c.querySelector(s);
-  const $$=(s,c=root)=>[...c.querySelectorAll(s)];
+  const $=(s,c=root)=>c.querySelector(s), $$=(s,c=root)=>[...c.querySelectorAll(s)];
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const industries={
@@ -14,13 +12,14 @@
     hotel:{kicker:'HOSPITALIDAD',label:'HOTELES',domain:'tuhotel.pe',title:'Haz más simple descubrir, consultar y reservar.',text:'Desarrollamos experiencias para hoteles y hospedajes donde disponibilidad, habitaciones y contacto sean fáciles de encontrar.',tags:['Habitaciones','Reservas','Galería','Ubicación','WhatsApp','Pagos'],html:`<div class="dws-hotel"><div class="dws-preview-nav"><strong>NIDO.</strong><span>Habitaciones · Experiencias · Restaurante</span></div><div class="dws-hotel-grid"><div class="dws-hotel-photo"><span>Ver habitaciones →</span></div><div class="dws-reservation"><small>RESERVA TU ESTADÍA</small><h3>Encuentra tu espacio.</h3><label>Llegada &nbsp; 24 Sep.</label><label>Salida &nbsp; 26 Sep.</label><label>Huéspedes &nbsp; 2 adultos</label><button>Ver disponibilidad</button></div></div></div>`},
     restaurant:{kicker:'GASTRONOMÍA',label:'RESTAURANTES',domain:'turestaurante.pe',title:'La experiencia puede empezar antes del primer plato.',text:'Creamos sitios para restaurantes donde menú, reservas, ubicación y contacto estén a un paso.',tags:['Menú digital','Reservas','Galería','Ubicación','WhatsApp','Eventos'],html:`<div class="dws-restaurant"><div class="dws-preview-nav"><strong>MESA.</strong><span>Menú · Reservas · Nosotros · Ubicación</span></div><div class="dws-restaurant-grid"><div class="dws-restaurant-copy"><small>COCINA CONTEMPORÁNEA</small><h3>Una experiencia antes del primer plato.</h3><button class="dws-preview-btn">Ver menú →</button></div><div><div class="dws-menu"><article><div class="dws-dish"></div><div><small>ENTRADA</small><strong>Sabores de temporada</strong></div><b>S/ 38</b></article><article><div class="dws-dish"></div><div><small>PRINCIPAL</small><strong>Selección de la casa</strong></div><b>S/ 62</b></article><article><div class="dws-dish"></div><div><small>POSTRE</small><strong>Final de autor</strong></div><b>S/ 26</b></article></div><div class="dws-table-reservation"><span>Viernes · 8:00 PM · 4 personas</span><button>Reservar mesa</button></div></div></div></div>`}
   };
-  const keys=Object.keys(industries);
-  let activeKey='corporate';
+
+  const keys=Object.keys(industries), stage=$('.dws-browser-stage');
+  let activeKey='corporate', rotation;
 
   function renderIndustry(key,animate=true){
-    const d=industries[key],index=keys.indexOf(key),stage=$('.dws-browser-stage');
+    const d=industries[key], index=keys.indexOf(key);
     activeKey=key;
-    $$('.dws-showcase-steps button').forEach(b=>b.classList.toggle('is-active',b.dataset.industry===key));
+    $$('.dws-industry-tabs button').forEach(b=>b.classList.toggle('is-active',b.dataset.industry===key));
     const update=()=>{
       $('#dws-stage-kicker').textContent=d.kicker;
       $('#dws-stage-counter').textContent=`${String(index+1).padStart(2,'0')} / ${String(keys.length).padStart(2,'0')}`;
@@ -30,40 +29,44 @@
       $('#dws-stage-text').textContent=d.text;
       $('#dws-stage-tags').innerHTML=d.tags.map(t=>`<span>${t}</span>`).join('');
       $('#dws-stage-content').innerHTML=d.html;
+      const progress=$('#dws-tab-progress'); if(progress) progress.style.transform=`translateX(${index*100}%)`;
     };
     if(animate&&!reduced&&window.gsap){
-      gsap.to(stage,{opacity:.35,y:8,duration:.16,ease:'power1.out',onComplete:()=>{update();gsap.fromTo(stage,{opacity:.35,y:8},{opacity:1,y:0,duration:.28,ease:'power2.out'});}});
+      gsap.to(stage,{opacity:.3,y:8,duration:.15,ease:'power1.out',onComplete:()=>{update();gsap.fromTo(stage,{opacity:.3,y:8},{opacity:1,y:0,duration:.3,ease:'power2.out'});}});
     }else update();
   }
 
-  $('.dws-showcase-steps').addEventListener('click',e=>{
-    const b=e.target.closest('button[data-industry]');
-    if(b)renderIndustry(b.dataset.industry);
-  });
-  renderIndustry('corporate',false);
-
-  if(window.gsap&&window.ScrollTrigger&&!reduced){
-    gsap.registerPlugin(ScrollTrigger);
-    gsap.utils.toArray('.dws-reveal').forEach(el=>gsap.to(el,{opacity:1,y:0,duration:.75,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 88%',once:true}}));
-    gsap.to('.dws-ring-one',{y:-18,x:-10,duration:4.5,yoyo:true,repeat:-1,ease:'sine.inOut'});
-    gsap.to('.dws-ring-two',{y:14,x:8,duration:3.8,yoyo:true,repeat:-1,ease:'sine.inOut'});
-    gsap.to('.dws-live-card',{y:-7,duration:2.4,yoyo:true,repeat:-1,ease:'sine.inOut'});
-    const mq=matchMedia('(min-width: 1051px)');
-    if(mq.matches){
-      ScrollTrigger.create({
-        trigger:'.dws-showcase',start:'top top',end:()=>`+=${keys.length*460}`,pin:'.dws-showcase-shell',pinSpacing:true,
-        onUpdate:self=>{const idx=Math.min(keys.length-1,Math.floor(self.progress*keys.length));const next=keys[idx];if(next!==activeKey)renderIndustry(next);}
-      });
-    }
-    gsap.utils.toArray('.dws-process article').forEach((el,i)=>ScrollTrigger.create({trigger:'.dws-process',start:`top+=${i*35} 78%`,onEnter:()=>activateProcess(i),onEnterBack:()=>activateProcess(i)}));
-  }else{
-    $$('.dws-reveal').forEach(el=>{el.style.opacity=1;el.style.transform='none'});
+  function startRotation(){
+    clearInterval(rotation);
+    if(reduced)return;
+    rotation=setInterval(()=>renderIndustry(keys[(keys.indexOf(activeKey)+1)%keys.length]),5200);
   }
 
-  const processItems=$$('.dws-process article'),processBar=$('.dws-process-progress i');
+  $('.dws-industry-tabs')?.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-industry]'); if(!b)return;
+    renderIndustry(b.dataset.industry); startRotation();
+  });
+  renderIndustry('corporate',false); startRotation();
+
+  const processItems=$$('.dws-process article'), processBar=$('.dws-process-progress i');
+  let processIndex=0;
   function activateProcess(i){
     processItems.forEach((el,n)=>el.classList.toggle('is-active',n===i));
     if(processBar)processBar.style.transform=`translateX(${i*100}%)`;
   }
   activateProcess(0);
+  if(!reduced)setInterval(()=>{processIndex=(processIndex+1)%processItems.length;activateProcess(processIndex)},2800);
+
+  if(window.gsap&&!reduced){
+    if(window.ScrollTrigger)gsap.registerPlugin(ScrollTrigger);
+    if(window.ScrollTrigger){
+      gsap.utils.toArray('.dws-reveal').forEach(el=>gsap.to(el,{opacity:1,y:0,duration:.7,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 90%',once:true}}));
+    }else $$('.dws-reveal').forEach(el=>gsap.to(el,{opacity:1,y:0,duration:.7}));
+    gsap.to('.dws-ring-one',{y:-15,x:-8,duration:4.5,yoyo:true,repeat:-1,ease:'sine.inOut'});
+    gsap.to('.dws-ring-two',{y:12,x:7,duration:3.8,yoyo:true,repeat:-1,ease:'sine.inOut'});
+    gsap.to('.dws-live-card',{y:-6,duration:2.5,yoyo:true,repeat:-1,ease:'sine.inOut'});
+    gsap.to('.dws-metric-card',{y:7,duration:3.1,yoyo:true,repeat:-1,ease:'sine.inOut'});
+  }else{
+    $$('.dws-reveal').forEach(el=>{el.style.opacity=1;el.style.transform='none'});
+  }
 })();
