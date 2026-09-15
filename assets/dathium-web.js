@@ -1,7 +1,7 @@
 (()=>{
   const root=document.querySelector('#dathium-web-showcase');
   if(!root)return;
-  if(!document.querySelector('link[data-dws-enhanced]')){const l=document.createElement('link');l.rel='stylesheet';l.href='https://cdn.jsdelivr.net/gh/binsenth61-hue/dathium-web-showcase@main/assets/dathium-web-enhanced.css?v=3';l.setAttribute('data-dws-enhanced','');document.head.appendChild(l);}
+  if(!document.querySelector('link[data-dws-enhanced]')){const l=document.createElement('link');l.rel='stylesheet';l.href='https://cdn.jsdelivr.net/gh/binsenth61-hue/dathium-web-showcase@main/assets/dathium-web-enhanced.css?v=4';l.setAttribute('data-dws-enhanced','');document.head.appendChild(l);}
   const $=(s,c=root)=>c.querySelector(s), $$=(s,c=root)=>[...c.querySelectorAll(s)];
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
