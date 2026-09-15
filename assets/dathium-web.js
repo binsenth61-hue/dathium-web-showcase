@@ -1,72 +1,57 @@
 (()=>{
   const root=document.querySelector('#dathium-web-showcase');
   if(!root)return;
-  const $=(s,c=root)=>c.querySelector(s), $$=(s,c=root)=>[...c.querySelectorAll(s)];
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const industries={
-    corporate:{kicker:'PRESENCIA EMPRESARIAL',label:'EMPRESAS',domain:'tuempresa.pe',title:'Una web que representa el verdadero nivel de tu empresa.',text:'Diseñamos sitios corporativos que generan confianza, comunican valor y convierten visitas en oportunidades.',tags:['Web corporativa','Landing pages','Portafolio','SEO','Formularios'],html:`<div class="dws-corporate"><div class="dws-preview-nav"><strong>ESTUDIO.</strong><span>Servicios · Proyectos · Nosotros · Contacto</span></div><div class="dws-corporate-main"><div><small>IDEAS QUE CRECEN</small><h3>Experiencias digitales con propósito.</h3><button class="dws-preview-btn">Conócenos →</button></div><div class="dws-corporate-art"></div></div></div>`},
-    commerce:{kicker:'COMERCIO DIGITAL',label:'E-COMMERCE',domain:'tutienda.pe',title:'Una tienda diseñada para transformar visitas en ventas.',text:'Creamos experiencias de compra claras y rápidas, pensadas para producto, navegación, carrito y conversión.',tags:['Catálogo','Productos','Carrito','Pagos','Promociones','Inventario'],html:`<div class="dws-commerce"><div class="dws-preview-nav"><strong>FORMA.</strong><span>Tienda · Buscar · Mi cuenta · Carrito 02</span></div><div class="dws-commerce-grid">${[189,219,159].map((p,i)=>`<article class="dws-product-card"><div class="dws-product-media"><i></i></div><span>Forma / 0${i+1}</span><b>S/ ${p}</b></article>`).join('')}</div></div>`},
-    tourism:{kicker:'TURISMO & EXPERIENCIAS',label:'TURISMO',domain:'explora.pe',title:'Convierte destinos y experiencias en consultas y reservas.',text:'Diseñamos sitios para agencias y operadores turísticos que facilitan descubrir, consultar y reservar.',tags:['Destinos','Tours','Paquetes','Reservas','WhatsApp','Pagos'],html:`<div class="dws-tourism"><div class="dws-tourism-hero"><div class="dws-preview-nav"><strong>ANDES.</strong><span>Destinos · Experiencias · Nosotros</span></div><div class="dws-tourism-copy"><small>DESCUBRE AREQUIPA</small><h3>Experiencias que empiezan antes del viaje.</h3><button class="dws-preview-btn">Explorar destinos →</button></div></div><div class="dws-booking"><div><small>DESTINO</small><strong>Valle del Colca</strong></div><div><small>FECHA</small><strong>24 Sep.</strong></div><div><small>VIAJEROS</small><strong>2 personas</strong></div><button>Ver disponibilidad</button></div></div>`},
-    services:{kicker:'EMPRESAS DE SERVICIOS',label:'SERVICIOS',domain:'tuservicio.pe',title:'Una web que convierte consultas en oportunidades.',text:'Diseñamos sitios para empresas y profesionales que venden conocimiento, atención o servicios especializados.',tags:['Servicios','Cotizaciones','Agenda','Formularios','CRM','WhatsApp'],html:`<div class="dws-services"><div class="dws-preview-nav"><strong>ATLAS.</strong><span>Servicios · Proyectos · Nosotros · Contacto</span></div><div class="dws-services-main"><div><small>SOLUCIONES PROFESIONALES</small><h3>Convierte una consulta en una oportunidad.</h3><button class="dws-preview-btn">Solicitar cotización →</button></div><div class="dws-service-list"><article><span>01</span><strong>Consultoría</strong><b>→</b></article><article><span>02</span><strong>Implementación</strong><b>→</b></article><article><span>03</span><strong>Soporte especializado</strong><b>→</b></article></div></div></div>`},
-    hotel:{kicker:'HOSPITALIDAD',label:'HOTELES',domain:'tuhotel.pe',title:'Haz más simple descubrir, consultar y reservar.',text:'Desarrollamos experiencias para hoteles y hospedajes donde disponibilidad, habitaciones y contacto sean fáciles de encontrar.',tags:['Habitaciones','Reservas','Galería','Ubicación','WhatsApp','Pagos'],html:`<div class="dws-hotel"><div class="dws-preview-nav"><strong>NIDO.</strong><span>Habitaciones · Experiencias · Restaurante</span></div><div class="dws-hotel-grid"><div class="dws-hotel-photo"><span>Ver habitaciones →</span></div><div class="dws-reservation"><small>RESERVA TU ESTADÍA</small><h3>Encuentra tu espacio.</h3><label>Llegada &nbsp; 24 Sep.</label><label>Salida &nbsp; 26 Sep.</label><label>Huéspedes &nbsp; 2 adultos</label><button>Ver disponibilidad</button></div></div></div>`},
-    restaurant:{kicker:'GASTRONOMÍA',label:'RESTAURANTES',domain:'turestaurante.pe',title:'La experiencia puede empezar antes del primer plato.',text:'Creamos sitios para restaurantes donde menú, reservas, ubicación y contacto estén a un paso.',tags:['Menú digital','Reservas','Galería','Ubicación','WhatsApp','Eventos'],html:`<div class="dws-restaurant"><div class="dws-preview-nav"><strong>MESA.</strong><span>Menú · Reservas · Nosotros · Ubicación</span></div><div class="dws-restaurant-grid"><div class="dws-restaurant-copy"><small>COCINA CONTEMPORÁNEA</small><h3>Una experiencia antes del primer plato.</h3><button class="dws-preview-btn">Ver menú →</button></div><div><div class="dws-menu"><article><div class="dws-dish"></div><div><small>ENTRADA</small><strong>Sabores de temporada</strong></div><b>S/ 38</b></article><article><div class="dws-dish"></div><div><small>PRINCIPAL</small><strong>Selección de la casa</strong></div><b>S/ 62</b></article><article><div class="dws-dish"></div><div><small>POSTRE</small><strong>Final de autor</strong></div><b>S/ 26</b></article></div><div class="dws-table-reservation"><span>Viernes · 8:00 PM · 4 personas</span><button>Reservar mesa</button></div></div></div></div>`}
-  };
+  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reveals=[...root.querySelectorAll('.dws-reveal')];
 
-  const keys=Object.keys(industries), stage=$('.dws-browser-stage');
-  let activeKey='corporate', rotation;
-
-  function renderIndustry(key,animate=true){
-    const d=industries[key], index=keys.indexOf(key);
-    activeKey=key;
-    $$('.dws-industry-tabs button').forEach(b=>b.classList.toggle('is-active',b.dataset.industry===key));
-    const update=()=>{
-      $('#dws-stage-kicker').textContent=d.kicker;
-      $('#dws-stage-counter').textContent=`${String(index+1).padStart(2,'0')} / ${String(keys.length).padStart(2,'0')}`;
-      $('#dws-stage-domain').textContent=d.domain;
-      $('#dws-stage-label').textContent=d.label;
-      $('#dws-stage-title').textContent=d.title;
-      $('#dws-stage-text').textContent=d.text;
-      $('#dws-stage-tags').innerHTML=d.tags.map(t=>`<span>${t}</span>`).join('');
-      $('#dws-stage-content').innerHTML=d.html;
-      const progress=$('#dws-tab-progress'); if(progress) progress.style.transform=`translateX(${index*100}%)`;
-    };
-    if(animate&&!reduced&&window.gsap){
-      gsap.to(stage,{opacity:.3,y:8,duration:.15,ease:'power1.out',onComplete:()=>{update();gsap.fromTo(stage,{opacity:.3,y:8},{opacity:1,y:0,duration:.3,ease:'power2.out'});}});
-    }else update();
+  if(reduced){
+    reveals.forEach(el=>{el.style.opacity='1';el.style.transform='none';});
+    return;
   }
 
-  function startRotation(){
-    clearInterval(rotation);
-    if(reduced)return;
-    rotation=setInterval(()=>renderIndustry(keys[(keys.indexOf(activeKey)+1)%keys.length]),5200);
-  }
+  const observer=new IntersectionObserver((entries,obs)=>{
+    entries.forEach(entry=>{
+      if(!entry.isIntersecting)return;
+      entry.target.animate([
+        {opacity:0,transform:'translateY(24px)'},
+        {opacity:1,transform:'translateY(0)'}
+      ],{
+        duration:700,
+        easing:'cubic-bezier(.2,.75,.25,1)',
+        fill:'forwards'
+      });
+      obs.unobserve(entry.target);
+    });
+  },{threshold:.12,rootMargin:'0px 0px -4% 0px'});
 
-  $('.dws-industry-tabs')?.addEventListener('click',e=>{
-    const b=e.target.closest('button[data-industry]'); if(!b)return;
-    renderIndustry(b.dataset.industry); startRotation();
+  reveals.forEach(el=>observer.observe(el));
+
+  const floatOne=root.querySelector('.dws-float-one');
+  const floatTwo=root.querySelector('.dws-float-two');
+  const browser=root.querySelector('.dws-browser-main');
+  let raf=0;
+
+  window.addEventListener('pointermove',e=>{
+    if(window.innerWidth<900)return;
+    cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(()=>{
+      const x=e.clientX/window.innerWidth-.5;
+      const y=e.clientY/window.innerHeight-.5;
+      if(browser) browser.style.transform=`rotate(.25deg) translate3d(${x*5}px,${y*4}px,0)`;
+      if(floatOne) floatOne.style.transform=`translate3d(${x*-10}px,${y*-8}px,0)`;
+      if(floatTwo) floatTwo.style.transform=`translate3d(${x*11}px,${y*8}px,0)`;
+    });
+  },{passive:true});
+
+  root.querySelectorAll('.dws-sector').forEach(card=>{
+    card.addEventListener('pointermove',e=>{
+      if(window.innerWidth<900 || card.classList.contains('dws-sector-photo') || card.classList.contains('dws-sector-commerce'))return;
+      const r=card.getBoundingClientRect();
+      const x=((e.clientX-r.left)/r.width)*100;
+      const y=((e.clientY-r.top)/r.height)*100;
+      card.style.backgroundImage=`radial-gradient(circle at ${x}% ${y}%, rgba(149,167,255,.09), transparent 34%), linear-gradient(145deg,#101b2f,#0d1728)`;
+    });
+    card.addEventListener('pointerleave',()=>{card.style.backgroundImage='';});
   });
-  renderIndustry('corporate',false); startRotation();
-
-  const processItems=$$('.dws-process article'), processBar=$('.dws-process-progress i');
-  let processIndex=0;
-  function activateProcess(i){
-    processItems.forEach((el,n)=>el.classList.toggle('is-active',n===i));
-    if(processBar)processBar.style.transform=`translateX(${i*100}%)`;
-  }
-  activateProcess(0);
-  if(!reduced)setInterval(()=>{processIndex=(processIndex+1)%processItems.length;activateProcess(processIndex)},2800);
-
-  if(window.gsap&&!reduced){
-    if(window.ScrollTrigger)gsap.registerPlugin(ScrollTrigger);
-    if(window.ScrollTrigger){
-      gsap.utils.toArray('.dws-reveal').forEach(el=>gsap.to(el,{opacity:1,y:0,duration:.7,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 90%',once:true}}));
-    }else $$('.dws-reveal').forEach(el=>gsap.to(el,{opacity:1,y:0,duration:.7}));
-    gsap.to('.dws-ring-one',{y:-15,x:-8,duration:4.5,yoyo:true,repeat:-1,ease:'sine.inOut'});
-    gsap.to('.dws-ring-two',{y:12,x:7,duration:3.8,yoyo:true,repeat:-1,ease:'sine.inOut'});
-    gsap.to('.dws-live-card',{y:-6,duration:2.5,yoyo:true,repeat:-1,ease:'sine.inOut'});
-    gsap.to('.dws-metric-card',{y:7,duration:3.1,yoyo:true,repeat:-1,ease:'sine.inOut'});
-  }else{
-    $$('.dws-reveal').forEach(el=>{el.style.opacity=1;el.style.transform='none'});
-  }
 })();
